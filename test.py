@@ -12,6 +12,7 @@ import os,sys,datetime,time,shutil
 
 # Below is the area for class definition
 
+# ZCY
 
 			
 # Below is for helper functions
@@ -22,23 +23,38 @@ def main():
 	
 	# you can change below paras to define another unit test case
 	
-	old_spec = 'd:/test/2011_old.xls'
+	last_spec = 'd:/test/2011_old.xls'
 	new_spec = 'd:/test/2011_new.xls'
 	
 	
 	xlsApp = Dispatch("Excel.Application")
 	
-	old_book = xlsApp.Workbooks.open(old_spec)
+	last_book = xlsApp.Workbooks.open(last_spec)
+	print last_spec, 'loaded'
+	new_book = xlsApp.Workbooks.open(new_spec)
+	print new_spec, 'loaded'
 	
-	sheets = old_book.Sheets
+	last_sheets = last_book.Sheets
+	new_sheets = new_book.Sheets
+
+	COL = 6
 	
-	for sheet in sheets:
+	for sheet in new_sheets:
 		print sheet.Name
-		data = sheet.Range(sheet.Cells(1,1),sheet.Cells(500,50))
-		for item in data:
-			if item.Value:
-				print item.Value,
-		print ''
+		if sheet.Name =='ZCY':
+			sht = last_book.Worksheets(sheet.Name)
+			for row_index in range(1,200):
+				if (not sheet.Cells(row_index,COL).Value) and sht.Cells(row_index,COL).Value:
+					sheet.Cells(row_index,COL).Value = sht.Cells(row_index,COL).Value
+					print 'add value:', sht.Cells(row_index,COL).Value
+		
+	new_book.Save()
+	new_book.Close()
+	print new_spec, 'closed'
+	last_book.Close(SaveChanges=0)
+	print last_spec, 'closed'
+	
+	del xlsApp
 
 if __name__=='__main__':
 	main()
