@@ -9,7 +9,12 @@
 from win32com.client import constants,Dispatch
 import os,sys,datetime,time,shutil
 
-
+#select column to compare with
+key_col = 3		#A Column
+value_col = 16	#M Column
+max_rows = 5000
+threshold_none = 5
+	
 # Below is the area for class definition
 
 
@@ -40,8 +45,8 @@ def main():
 	new_spec_name = sys.argv[2]
 	
 	# below two lines are used for test only
-	last_spec_name = 'd:/LocalDev/Project/specupdate/MGCF-PM(V2.1.5)-Company-Version00.xlsx'
-	new_spec_name = 'd:/LocalDev/Project/specupdate/MGCF-PM(V2.1.6)-Company-Version00.xlsx'
+	# last_spec_name = 'd:/LocalDev/Project/specupdate/MGCF-PM(V2.1.5)-Company-Version00.xlsx'
+	# new_spec_name = 'd:/LocalDev/Project/specupdate/MGCF-PM(V2.1.6)-Company-Version00.xlsx'
 	
 	# Generate xlsApp to invoke win32com
 	xlsApp = Dispatch("Excel.Application")
@@ -57,12 +62,6 @@ def main():
 	last_sheets = last_book.Sheets
 	new_sheets = new_book.Sheets
 
-	#select column to compare with
-	key_col = 1		#A Column
-	value_col = 13	#M Column
-	max_rows = 5000
-	threshold_none = 5
-	
 	#define start sheet
 	sheet_start = 3 	#skip sheet 0 and sheet 1
 	
@@ -74,7 +73,7 @@ def main():
 	for sheet_index in range(sheet_start,num_sheets):
 		sheet = last_sheets[sheet_index]
 		sheet_name = sheet.Name
-		print 'parsing sheet:', sheet_name
+		print 'parsing sheet:', sheet_name,
 		value_dict = {}
 		threshold_count = 0
 		for row_index in range(2,max_rows):
@@ -86,9 +85,7 @@ def main():
 				break
 			if not (key == None) and (not value == None):
 				value_dict[key] = value
-				print key,':',value,'\t',
-		if len(value_dict)> 0:
-			print
+		print '[', len(value_dict), ']'
 		last_sheet_dict[sheet_name] = value_dict
 	print 'Dictionary built.'
 	
@@ -98,7 +95,7 @@ def main():
 	for sheet_index in range(sheet_start,num_sheets):
 		sheet = new_sheets[sheet_index]
 		sheet_name = sheet.Name
-		print 'Processing sheet:', sheet_name
+		print 'Processing sheet:', sheet_name,
 		threshold_count = 0
 		for row_index in range(2,max_rows):
 			key = sheet.Cells(row_index,key_col).Value
@@ -111,7 +108,8 @@ def main():
 				if sheet_name in last_sheet_dict.keys():
 					if key in last_sheet_dict[sheet_name].keys():
 						sheet.Cells(row_index,value_col).Value = last_sheet_dict[sheet_name][key]
-						print sheet_name, key, 'set'
+						print '.',
+		print
 	print '\nNew spec is set.'
 		
 	new_book.Save()
